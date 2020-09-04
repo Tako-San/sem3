@@ -13,7 +13,7 @@ void echo(int ac, char ** av)
 {
     int no_nl = 0;
     int i = 1;
-    char end_l[2] = " ";
+    char endl[] = " ";
 
     if(!strcmp(av[i], "-n"))
     {
@@ -24,11 +24,12 @@ void echo(int ac, char ** av)
     for( ; i < ac; i++)
     {
         if(i == ac - 1)
+        {
             if (no_nl)
-                strcpy(end_l, "");
+                strcpy(endl, "");
             else
-                strcpy(end_l, "\n");
-
-        printf("%s%s", av[i], end_l);
+                strcpy(endl, "\n");
+        }
+        printf("%s%s", av[i], endl);
     }
 }
