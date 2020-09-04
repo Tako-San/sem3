@@ -11,9 +11,7 @@ int main(int ac, char ** av)
 
 void echo(int ac, char ** av)
 {
-    int no_nl = 0;
-    int i = 1;
-    char endl[] = " ";
+    int no_nl = 0, i = 1;
 
     if(ac < 2)
         return;
@@ -22,8 +20,7 @@ void echo(int ac, char ** av)
         no_nl = 1, ++i;
 
     for( ; i < ac; i++)
-    {
-        (i == ac - 1 && no_nl) ? strcpy(endl, "") : strcpy(endl, "\n");
-        printf("%s%s", av[i], endl);
-    }
+        printf("%s%s", av[i], (i == ac - 1) ? "" : " ");
+
+    printf("%s", no_nl == 1 ? "" : "\n");
 }
