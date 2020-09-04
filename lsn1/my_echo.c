@@ -15,21 +15,15 @@ void echo(int ac, char ** av)
     int i = 1;
     char endl[] = " ";
 
+    if(ac < 2)
+        return;
+
     if(!strcmp(av[i], "-n"))
-    {
-        no_nl = 1;
-        i++;
-    }
+        no_nl = 1, ++i;
 
     for( ; i < ac; i++)
     {
-        if(i == ac - 1)
-        {
-            if (no_nl)
-                strcpy(endl, "");
-            else
-                strcpy(endl, "\n");
-        }
+        (i == ac - 1 && no_nl) ? strcpy(endl, "") : strcpy(endl, "\n");
         printf("%s%s", av[i], endl);
     }
 }
