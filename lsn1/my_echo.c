@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 void echo( int ac, char ** av )
 {
-    int no_nl = 0, i = 1;
+    bool no_nl = false; 
+    int i = 1;
 
     if (ac < 2)
     {
@@ -13,7 +15,7 @@ void echo( int ac, char ** av )
 
     if (strcmp(av[i], "-n") == 0)
     {
-        no_nl = 1;
+        no_nl = true;
        	++i;
     }
 
