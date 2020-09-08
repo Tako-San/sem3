@@ -1,3 +1,0 @@
-/media/hdd/my_data/sem3/cmake-build-debug/CMakeFiles/rebuild_cache.dir
-/media/hdd/my_data/sem3/cmake-build-debug/CMakeFiles/edit_cache.dir
-/media/hdd/my_data/sem3/cmake-build-debug/CMakeFiles/sem3.dir

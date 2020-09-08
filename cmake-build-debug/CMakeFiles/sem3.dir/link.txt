@@ -1,1 +1,0 @@
-/usr/bin/cc -g   CMakeFiles/sem3.dir/lsn1/my_echo.c.o  -o sem3 
