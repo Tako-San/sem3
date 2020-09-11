@@ -1,7 +1,7 @@
 #include <stdio.h>
-#include <assert.h>
+#include <ctype.h>
 #include <stdlib.h>
-// #include <stdbool.h>
+#include <stdbool.h>
 
 #include <pwd.h>
 #include <grp.h>
@@ -10,71 +10,104 @@
 
 #define MAXLEN 100
 
-void print_info( uid_t uid, gid_t gid, int counter,  gid_t * gid_lst)
+typedef struct group Group;
+typedef struct passwd Passwd;
+
+
+typedef struct Info
 {
-    struct group * gr = getgrgid(gid);
-    struct passwd * pwd = getpwuid(uid);
+    Group * gr;
+    Passwd * pwd;
 
-    // assert(gr != NULL && pwd != NULL && counter >= 0);
+    int lst_len;
+    gid_t * gid_lst;
+} Info;
 
-    printf("uid=%d(%s) ", uid, pwd->pw_name);
-    printf("gid=%d(%s) ", gid, gr->gr_name);
+
+void print_info( Info * usr )
+{
+    printf("uid=%d(%s) ", usr->pwd->pw_uid, usr->pwd->pw_name);
+    printf("gid=%d(%s) ", usr->gr->gr_gid,  usr->gr->gr_name);
     printf("groups=");
 
-    for (int i = 0; i < counter; ++i)
+    for (int i = 0; i < usr->lst_len; ++i)
     {
-        gid_t gid_i = gid_lst[i];
-        struct group * gr_i = getgrgid(gid_i);
+        // gid_t gid_i = gid_lst[i];
+        Group * gr_i = getgrgid(usr->gid_lst[i]);
 
-        printf("%d(%s)%s", gid_i, gr_i->gr_name, (i + 1 == counter) ? "" : ",");
+        printf("%d(%s)%s", usr->gid_lst[i], gr_i->gr_name, (i + 1 == usr->lst_len) ? "" : ",");
     }
 
     printf("\n");
 }
 
+bool get_custom(char * arg, Info * usr)
+{
+    if (isdigit(arg[0]))
+    {
+        uid_t uid = strtol(arg, NULL, 10);
+        usr->pwd = getpwuid(uid);
+    }
+    else
+        usr->pwd = getpwnam(arg);
 
+    if (usr->pwd == NULL)
+    {
+        printf("%s: no such user\n", arg);
+        return false;
+    }
+
+    usr->gr = getgrgid(usr->pwd->pw_gid);
+
+    usr->lst_len = getgrouplist(usr->pwd->pw_name,
+                                usr->pwd->pw_gid,
+                                usr->gid_lst,
+                                &(usr->lst_len));
+
+    return true;
+}
+
+bool get_cur(Info * usr)
+{
+    usr->pwd = getpwuid(getuid());
+    usr->gr  = getgrgid(getgid());
+
+    usr->lst_len = getgroups(MAXLEN, usr->gid_lst);
+
+    return true;
+}
 
 int main( int argc, char ** argv )
 {
-    struct passwd * pwd;
+    Info usr;
+    bool condition = false;
 
-    uid_t uid;
-    gid_t gid;
+    usr.lst_len = MAXLEN;
+    usr.gid_lst = (gid_t *)calloc(MAXLEN, sizeof(gid_t));
 
-    gid_t gid_lst[MAXLEN];
-    int counter = MAXLEN;
-
-    if (argc == 2)
+    switch (argc)
     {
-        if (isdigit(argv[1][0]))
-            pwd = getpwuid(strtol(argv[1]));
-        else
-            pwd = getpwnam(argv[1]);
+    case 1:
+        condition = get_cur(&usr);
+        break;
 
-        if (pwd == NULL)
-        {
-            printf("%s: no such user\n", argv[1]);
-            exit(1);
-        }
+    case 2:
+        condition = get_custom(argv[1], &usr);
+        break;
 
-        uid = pwd->pw_uid;
-        gid = pwd->pw_gid;
-        counter = getgrouplist(pwd->pw_name, pwd->pw_gid, gid_lst, &counter);
-    }
-    else if (argc == 1)
-    {
-        uid = getuid();
-        gid = getgid();
-        counter = getgroups(MAXLEN, gid_lst);
-    }
-    else
-    {
+    default:
         printf("Wrong number of agruments\n"
                "Exit...\n");
-        exit(1);
+        condition = false;
+        break;
     }
 
-    print_info(uid, gid, counter, gid_lst);
+    if (!condition)
+        exit(1);
+
+    print_info(&usr);
+
+    free(usr.gid_lst);
 
     return 0;
 }
