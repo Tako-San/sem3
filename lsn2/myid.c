@@ -59,6 +59,9 @@ bool get_custom(char * arg, Info * usr)
 
     usr->gr = getgrgid(usr->pwd->pw_gid);
 
+    if (usr->pwd == NULL || usr->gr == NULL)
+        return false;
+
     usr->lst_len = getgrouplist(usr->pwd->pw_name,
                                 usr->pwd->pw_gid,
                                 usr->gid_lst,
@@ -71,6 +74,9 @@ bool get_cur(Info * usr)
 {
     usr->pwd = getpwuid(getuid());
     usr->gr  = getgrgid(getgid());
+
+    if (usr->pwd == NULL || usr->gr == NULL)
+        return false;
 
     usr->lst_len = getgroups(MAXLEN, usr->gid_lst);
 
