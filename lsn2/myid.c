@@ -10,6 +10,7 @@
 
 #define MAXLEN 100
 
+
 typedef struct group Group;
 typedef struct passwd Passwd;
 
@@ -32,13 +33,9 @@ void print_info( Info * usr )
 
     for (int i = 0; i < usr->lst_len; ++i)
     {
-        // gid_t gid_i = gid_lst[i];
         Group * gr_i = getgrgid(usr->gid_lst[i]);
-
-        printf("%d(%s)%s", usr->gid_lst[i], gr_i->gr_name, (i + 1 == usr->lst_len) ? "" : ",");
+        printf("%d(%s)%s", usr->gid_lst[i], gr_i->gr_name, (i + 1 == usr->lst_len) ? "\n" : ",");
     }
-
-    printf("\n");
 }
 
 bool get_custom(char * arg, Info * usr)
@@ -51,6 +48,7 @@ bool get_custom(char * arg, Info * usr)
     else
         usr->pwd = getpwnam(arg);
 
+
     if (usr->pwd == NULL)
     {
         printf("%s: no such user\n", arg);
@@ -59,7 +57,7 @@ bool get_custom(char * arg, Info * usr)
 
     usr->gr = getgrgid(usr->pwd->pw_gid);
 
-    if (usr->pwd == NULL || usr->gr == NULL)
+    if (usr->gr == NULL)
         return false;
 
     usr->lst_len = getgrouplist(usr->pwd->pw_name,
@@ -76,7 +74,10 @@ bool get_cur(Info * usr)
     usr->gr  = getgrgid(getgid());
 
     if (usr->pwd == NULL || usr->gr == NULL)
+    {
+        printf("I can't get information about you\n");
         return false;
+    }
 
     usr->lst_len = getgroups(MAXLEN, usr->gid_lst);
 
@@ -109,7 +110,10 @@ int main( int argc, char ** argv )
     }
 
     if (!condition)
+    {
+        free(usr.gid_lst);
         exit(1);
+    }
 
     print_info(&usr);
 
