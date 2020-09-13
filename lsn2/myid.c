@@ -34,11 +34,12 @@ void print_info( Info * usr )
     for (int i = 0; i < usr->lst_len; ++i)
     {
         Group * gr_i = getgrgid(usr->gid_lst[i]);
-        printf("%d(%s)%s", usr->gid_lst[i], gr_i->gr_name, (i + 1 == usr->lst_len) ? "\n" : ",");
+        printf("%d(%s)%s", usr->gid_lst[i], gr_i->gr_name,
+                                  (i + 1 == usr->lst_len) ? "\n" : ",");
     }
 }
 
-bool get_custom(char * arg, Info * usr)
+bool get_custom( char * arg, Info * usr )
 {
     if (isdigit(arg[0]))
     {
@@ -68,7 +69,7 @@ bool get_custom(char * arg, Info * usr)
     return true;
 }
 
-bool get_cur(Info * usr)
+bool get_cur( Info * usr )
 {
     usr->pwd = getpwuid(getuid());
     usr->gr  = getgrgid(getgid());
