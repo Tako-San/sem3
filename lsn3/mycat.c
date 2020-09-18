@@ -4,86 +4,60 @@
 
 #include <unistd.h>
 
-#include <assert.h>
 
 #include <errno.h>
 #include <string.h>
 #include <stdlib.h>
 #include <stdio.h>
 
-#define MAX_MEM_SIZE 100
+#include <stdbool.h>
+
+#define MAX_MEM_SIZE 4096
 #define MAX_ACCESS   0777
 
-void from_command_line()
+bool read_n_write_to_stdout( int fd_in, char * buffer )
 {
-    char * buffer = (char *)calloc(MAX_MEM_SIZE, sizeof(char));
-    ssize_t r_num = 1,
-            w_num = 1;
+    ssize_t r_num, w_num;
 
-    while (r_num != 0)
+    r_num = read(fd_in, buffer, MAX_MEM_SIZE);
+    if (r_num < 0)
+        return false;
+
+    w_num = write(STDOUT_FILENO, buffer, r_num);
+    if (w_num < 0)
     {
-        r_num = read(STDIN_FILENO, buffer, MAX_MEM_SIZE);
-
-        if (r_num < 0)
-            perror("stdin");
-
-        w_num = write(STDOUT_FILENO, buffer, r_num);
-        if (w_num < 0)
-            perror("stdout");
+        perror("stdout");
+        return false;
     }
 
-    free(buffer);
+    return (w_num > 0 && r_num > 0);
 }
 
-void from_file( int ac, char ** av )
-{
-
-#define halt()    \
-    close(fd);    \
-    continue      \
-
-    assert(ac > 0);
-
-    char * buffer = (char *)calloc(MAX_MEM_SIZE, sizeof(char));
-
-    for ( int i = 1; i < ac; ++i )
-    {
-        int fd = open(av[i], O_RDONLY, MAX_ACCESS);
-
-        if (fd < 0)
-        {
-            perror(av[i]);
-            halt();
-        }
-
-        ssize_t r_num = read(fd, buffer, MAX_MEM_SIZE);
-        if (r_num < 0)
-        {
-            perror(av[i]);
-            halt();
-        }
-
-        ssize_t w_code = write(STDOUT_FILENO, buffer, r_num );
-        if (w_code < 0)
-        {
-            perror("stdout");
-            halt();
-        }
-
-        close(fd);
-    }
-
-    free(buffer);
-
-#undef halt
-}
 
 int main( int argc, char ** argv )
 {
+    char buf[MAX_MEM_SIZE];
+
     if (argc == 1)
-        from_command_line();
-    else
-        from_file(argc, argv);
+    {
+        while (read_n_write_to_stdout(STDOUT_FILENO, buf))
+            ;
+
+        return 0;
+    }
+
+    for (int i = 1; i < argc; ++i)
+    {
+        int fd = open(argv[i], O_RDONLY, MAX_ACCESS);
+        if (fd < 0)
+        {
+            perror(argv[i]);
+            continue;
+        }
+
+        read_n_write_to_stdout(fd, buf);
+        close(fd);
+    }
 
     return 0;
 }
