@@ -10,42 +10,43 @@
 
 ssize_t safe_write( int fd, const void * buf, size_t count )
 {
-    ssize_t w_num = 1;
+    ssize_t w_num = 0;
     size_t to_wr = count;
-    const char * cur_buf = buf;
 
-    while (w_num > 0)
+    do
     {
-        w_num = write(fd, cur_buf, to_wr);
-        cur_buf += w_num;
+        w_num = write(fd, buf, to_wr);
+        buf += w_num;
         to_wr -= w_num;
-    }
+    } while (w_num > 0);
 
     return w_num;
 }
 
 bool read_n_write( int fd_in, int fd_out, char * buffer )
 {
-    ssize_t r_num = 1, w_num;
+#define ERR_CHECK( cond, msg ) \
+    if (cond)                  \
+    {                          \
+        perror(msg);           \
+        return false;          \
+    }                          \
 
-    while (r_num > 0)
+    ssize_t r_num = 0,
+            w_num = 0;
+
+    do
     {
         r_num = read(fd_in, buffer, MAX_MEM_SIZE);
-        if (r_num < 0)
-        {
-            perror("");
-            return false;
-        }
+        ERR_CHECK(r_num < 0, "");
 
         w_num = safe_write(fd_out, buffer, r_num);
-        if (w_num < 0)
-        {
-            perror("");
-            return false;
-        }
-    }
+        ERR_CHECK(w_num < 0, "");
+
+    } while (r_num > 0);
 
     return (w_num > 0 && r_num > 0);
+#undef ERR_CHECK
 }
 
 
@@ -57,9 +58,14 @@ int main( int argc, char ** argv )
     if (argc == 1)
     {
         read_n_write(STDIN_FILENO, STDOUT_FILENO, buf);
-
         return 0;
     }
+    else if (!strcmp(argv[1], "-"))
+    {
+        read_n_write(STDIN_FILENO, STDOUT_FILENO, buf);
+        return 0;
+    }
+
 
     for (int i = 1; i < argc; ++i)
     {
