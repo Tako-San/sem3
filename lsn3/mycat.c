@@ -12,17 +12,24 @@
 #include <stdio.h>
 
 #define MAX_MEM_SIZE 100
-#define MAX_ACCES    0777
+#define MAX_ACCESS   0777
 
 void from_command_line()
 {
     char * buffer = (char *)calloc(MAX_MEM_SIZE, sizeof(char));
-    ssize_t num = 1;
+    ssize_t r_num = 1,
+            w_num = 1;
 
-    while (num != 0)
+    while (r_num != 0)
     {
-        num = read(STDIN_FILENO, buffer, MAX_MEM_SIZE);
-        write(STDOUT_FILENO, buffer, num);
+        r_num = read(STDIN_FILENO, buffer, MAX_MEM_SIZE);
+
+        if (r_num < 0)
+            perror("stdin");
+
+        w_num = write(STDOUT_FILENO, buffer, r_num);
+        if (w_num < 0)
+            perror("stdout");
     }
 
     free(buffer);
@@ -30,20 +37,45 @@ void from_command_line()
 
 void from_file( int ac, char ** av )
 {
+
+#define halt()    \
+    close(fd);    \
+    continue      \
+
     assert(ac > 0);
 
     char * buffer = (char *)calloc(MAX_MEM_SIZE, sizeof(char));
-    ssize_t num = 1;
 
     for ( int i = 1; i < ac; ++i )
     {
-        FILE * fd = open(av[i], O_RDONLY, MAX_ACCES);
+        int fd = open(av[i], O_RDONLY, MAX_ACCESS);
 
-        num = read(fd, buffer, MAX_MEM_SIZE);
-        write(STDOUT_FILENO, buffer, num );
+        if (fd < 0)
+        {
+            perror(av[i]);
+            halt();
+        }
+
+        ssize_t r_num = read(fd, buffer, MAX_MEM_SIZE);
+        if (r_num < 0)
+        {
+            perror(av[i]);
+            halt();
+        }
+
+        ssize_t w_code = write(STDOUT_FILENO, buffer, r_num );
+        if (w_code < 0)
+        {
+            perror("stdout");
+            halt();
+        }
 
         close(fd);
     }
+
+    free(buffer);
+
+#undef halt
 }
 
 int main( int argc, char ** argv )
