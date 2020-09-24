@@ -55,12 +55,7 @@ int main( int argc, char ** argv )
     char buf[MAX_MEM_SIZE];
 
 
-    if (argc == 1)
-    {
-        read_n_write(STDIN_FILENO, STDOUT_FILENO, buf);
-        return 0;
-    }
-    else if (!strcmp(argv[1], "-"))
+    if (argc == 1 || !strcmp(argv[1], "-"))
     {
         read_n_write(STDIN_FILENO, STDOUT_FILENO, buf);
         return 0;
