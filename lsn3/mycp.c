@@ -129,14 +129,19 @@ bool make_copy(int opts, char * file_src, char * file_dst)
         if (I)
         {
             char ans = 'n';
-            printf("Rewrite file: %s? ", file_src);
+            printf("Rewrite file: %s? ", file_dst);
             scanf("%c", &ans);
-            dst_oflag = ans == 'y' ? O_WRONLY : dst_oflag;
+
+            if (ans != 'y')
+                return false;
+
+            dst_oflag = O_WRONLY;
         }
         else if (F)
             dst_oflag = O_WRONLY;
 
-        dst = open(file_dst, dst_oflag, MAX_ACCESS);
+        if (F || I)
+            dst = open(file_dst, dst_oflag, MAX_ACCESS);
     }
 
     if (dst < 0)
