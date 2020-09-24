@@ -8,6 +8,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <errno.h>
 
 
 #define MAX_MEM_SIZE 4096
@@ -88,14 +89,12 @@ int read_opts(int ac, char ** av)
         switch (cur_opt)
         {
             case '?':
-                printf("Unknown key");
+                printf("Unknown key\n");
                 return UNKNOWN;
             case 'i':
-                printf("i\n");
                 opts |= INTERACTIVE;
                 break;
             case 'f':
-                printf("f\n");
                 opts |= FORCE;
                 break;
             case END:
@@ -109,10 +108,12 @@ int read_opts(int ac, char ** av)
 
 bool make_copy(int opts, char * file_src, char * file_dst)
 {
+    int F = opts & FORCE,
+        I = opts & INTERACTIVE;
+
     char buf[MAX_MEM_SIZE];
 
-    int dst_oflag = O_WRONLY | O_CREAT;
-    dst_oflag |= (opts & FORCE) == 0 ? O_EXCL : 0x0;
+    int dst_oflag = O_WRONLY | O_CREAT | O_EXCL;
 
     int src = open(file_src, O_RDONLY, MAX_ACCESS);
     if (src < 0)
@@ -122,6 +123,22 @@ bool make_copy(int opts, char * file_src, char * file_dst)
     }
 
     int dst = open(file_dst, dst_oflag, MAX_ACCESS);
+
+    if (errno == EEXIST)
+    {
+        if (I)
+        {
+            char ans = 'n';
+            printf("Rewrite file: %s? ", file_src);
+            scanf("%c", &ans);
+            dst_oflag = ans == 'y' ? O_WRONLY : dst_oflag;
+        }
+        else if (F)
+            dst_oflag = O_WRONLY;
+
+        dst = open(file_dst, dst_oflag, MAX_ACCESS);
+    }
+
     if (dst < 0)
     {
         close(src);
