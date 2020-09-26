@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 
 #include <sys/types.h>
@@ -9,7 +10,7 @@
     if (what < 0)       \
     {                   \
         perror(#what);  \
-        return 1;       \
+        return errno;   \
     }                   \
 
 

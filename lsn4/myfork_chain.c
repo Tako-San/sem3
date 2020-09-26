@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -27,7 +28,7 @@ bool ac_check(int ac)
     if (pid < 0)        \
     {                   \
         perror("");     \
-        return 1;       \
+        return errno;   \
     }                   \
 
 int main(int ac, char ** av)

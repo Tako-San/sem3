@@ -1,7 +1,9 @@
 #include <stdio.h>
+#include <errno.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
+
 #include <unistd.h>
 #include <time.h>
 
@@ -18,7 +20,7 @@ void print_time( timespec bgn, timespec end)
     if (what < 0)       \
     {                   \
         perror(#what);  \
-        return 1;       \
+        return errno;   \
     }                   \
 
 int main( int ac, char ** av )
