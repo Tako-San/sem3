@@ -1,21 +1,29 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 #include <sys/types.h>
 #include <unistd.h>
 
-int main(int ac, char ** av)
+bool ac_check(int ac)
 {
     if (ac > 2)
     {
         printf("Too many arguments\n");
-        return 1;
+        return false;
     }
     else if (ac < 2)
     {
         printf("Too few arguments\n");
-        return 2;
+        return false;
     }
+    return true;
+}
+
+int main(int ac, char ** av)
+{
+    if (!ac_check(ac))
+        return 1;
 
     unsigned N = strtol(av[1], NULL, 10);
 
@@ -36,6 +44,8 @@ int main(int ac, char ** av)
             return 0;
         }
     }
+
+    printf("\n");
 
     return 0;
 }

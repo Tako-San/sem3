@@ -1,12 +1,9 @@
 #include <stdio.h>
-#include <stdlib.h>
 #include <stdbool.h>
 
 #include <unistd.h>
 #include <getopt.h>
 
-#include <sys/types.h>
-#include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
 
@@ -14,12 +11,13 @@
 #define MAX_MEM_SIZE 4096
 #define MAX_ACCESS   0777
 
-#define SHORT_OPTS   "fi"
+#define SHORT_OPTS   "fiv"
 
 enum FLAGS
 {
     INTERACTIVE = 0x1,
-    FORCE = 0x2,
+    FORCE       = 0x2,
+    VERBOSE     = 0X4
 };
 
 enum OP_CODE
@@ -32,6 +30,7 @@ struct option OPTS[] =
         {
             {"force", 0, NULL, 'f'},
             {"interactive", 0, NULL, 'i'},
+            {"verbose", 0, NULL, 'v'},
             {0, 0, 0, 0}
         };
 
@@ -97,10 +96,12 @@ int read_opts(int ac, char ** av)
             case 'f':
                 opts |= FORCE;
                 break;
+            case 'v':
+                opts |= VERBOSE;
+                break;
             case END:
                 return opts;
             default:
-                printf("Unknown key: -%c\n", cur_opt);
                 return UNKNOWN;
         }
     }
@@ -109,7 +110,8 @@ int read_opts(int ac, char ** av)
 bool make_copy(int opts, char * file_src, char * file_dst)
 {
     int F = opts & FORCE,
-        I = opts & INTERACTIVE;
+        I = opts & INTERACTIVE,
+        V = opts & VERBOSE;
 
     char buf[MAX_MEM_SIZE];
 
@@ -153,6 +155,9 @@ bool make_copy(int opts, char * file_src, char * file_dst)
 
     read_n_write(src, dst, buf);
 
+    if (V)
+        printf("%s -> %s\n", file_src, file_dst);
+
     close(src);
     close(dst);
 
@@ -170,14 +175,8 @@ int main( int argc, char ** argv )
     int opts = read_opts(argc, argv);
 
     if (opts == UNKNOWN)
-    {
-        printf("Wrong key\n");
-        return 1;
-    }
-
-    if (!make_copy(opts, argv[0 + optind], argv[1 + optind]))
         return 1;
 
-    return 0;
+    return !make_copy(opts, argv[0 + optind], argv[1 + optind]);
 }
 

@@ -8,10 +8,9 @@
 
 #define MAX_NUM 50
 
-
 bool ac_check(int ac)
 {
-    if (ac < 3)
+    if (ac < 2)
     {
         printf("Too few arguments\n");
         return false;

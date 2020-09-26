@@ -27,7 +27,7 @@ void print_time( timespec bgn, timespec end)
 }
 
 
-int main( int ac, char ** av)
+int main( int ac, char ** av )
 {
     if (!ac_check(ac))
         return 1;
@@ -49,8 +49,7 @@ int main( int ac, char ** av)
         return 0;
     }
 
-    int state = 0;
-    if (wait(&state) < 0)
+    if (wait(NULL) < 0)
     {
         perror("");
         return 1;
