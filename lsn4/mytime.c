@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <stdbool.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
@@ -8,17 +7,6 @@
 
 typedef struct timespec timespec;
 
-bool ac_check(int ac)
-{
-    if (ac < 2)
-    {
-        printf("Too few arguments\n");
-        return false;
-    }
-
-    return true;
-}
-
 void print_time( timespec bgn, timespec end)
 {
     long long t_n = (end.tv_sec - bgn.tv_sec) * 1e9 + end.tv_nsec - bgn.tv_nsec;
@@ -26,37 +14,41 @@ void print_time( timespec bgn, timespec end)
     printf("dt: %.03lfs\n", t);
 }
 
+#define ERR_CHECK(what) \
+    if (what < 0)       \
+    {                   \
+        perror(#what);  \
+        return 1;       \
+    }                   \
 
 int main( int ac, char ** av )
 {
-    if (!ac_check(ac))
+    if (ac < 2)
+    {
+        printf("Too few arguments\n");
         return 1;
+    }
 
-    struct timespec t_bgn = {},
-                    t_end = {};
+    struct timespec t_bgn = {}, t_end = {};
 
     clock_gettime(CLOCK_MONOTONIC, &t_bgn);
 
     pid_t pid = fork();
-    if (pid < 0)
-    {
-        perror("");
-        return 1;
-    }
-    else if(pid == 0)
+
+    ERR_CHECK(pid);
+    if(pid == 0)
     {
         execvp(av[1], av + 1);
         return 0;
     }
 
-    if (wait(NULL) < 0)
-    {
-        perror("");
-        return 1;
-    }
+    ERR_CHECK(wait(NULL));
 
     clock_gettime(CLOCK_MONOTONIC, &t_end);
 
     print_time(t_bgn, t_end);
+
     return 0;
 }
+
+#undef ERR_CHECK

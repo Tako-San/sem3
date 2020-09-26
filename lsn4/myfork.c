@@ -30,14 +30,13 @@ int main(int ac, char ** av)
 
     printf("PARENT: %d\n", getpid());
 
-
     for (unsigned i = 0; i < N; ++i)
     {
         pid_t pid = fork();
         if (pid < 0)
         {
             perror("");
-            return 3;
+            return 1;
         }
         else if (pid == 0)
         {

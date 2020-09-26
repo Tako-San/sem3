@@ -1,38 +1,32 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>
 #include <unistd.h>
 
-#define MAX_NUM 50
+#define ERR_CHECK(what) \
+    if (what < 0)       \
+    {                   \
+        perror(#what);  \
+        return 1;       \
+    }                   \
 
-bool ac_check(int ac)
+
+int main( int ac, char ** av)
 {
     if (ac < 2)
     {
         printf("Too few arguments\n");
-        return false;
+        return 0;
     }
-
-    return true;
-}
-
-int main( int ac, char ** av)
-{
-    if (!ac_check(ac))
-        return 1;
 
     for (int i = 1; i < ac; ++i)
     {
         pid_t pid = fork();
-        if (pid < 0)
-        {
-            perror("");
-            return 1;
-        }
-        else if(pid == 0)
+        ERR_CHECK(pid);
+
+        if(pid == 0)
         {
             int num = strtol(av[i], NULL, 10);
             usleep(1000 * num);
@@ -42,16 +36,11 @@ int main( int ac, char ** av)
     }
 
     for (int i = 1; i < ac; ++i)
-    {
-        int state = 0;
-        if (wait(&state) < 0)
-        {
-            perror("");
-            return 2;
-        }
-    }
+        ERR_CHECK(wait(NULL));
 
     printf("\n");
 
     return 0;
 }
+
+#undef ERR_CHECK
