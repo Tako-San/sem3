@@ -3,6 +3,7 @@
 #include <stdbool.h>
 
 #include <sys/types.h>
+#include <sys/wait.h>
 #include <unistd.h>
 
 bool ac_check(int ac)
@@ -45,7 +46,7 @@ int main(int ac, char ** av)
         }
     }
 
-    printf("\n");
+    wait(NULL);
 
     return 0;
 }
