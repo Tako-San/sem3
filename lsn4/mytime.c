@@ -13,7 +13,7 @@ void print_time( timespec bgn, timespec end)
 {
     long long t_n = (end.tv_sec - bgn.tv_sec) * 1e9 + end.tv_nsec - bgn.tv_nsec;
     double t = t_n / 1e9;
-    printf("dt: %.03lfs\n", t);
+    printf("dt: %.06lfs\n", t);
 }
 
 #define ERR_CHECK(what) \

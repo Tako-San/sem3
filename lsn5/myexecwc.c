@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <errno.h>
+#include <ctype.h>
 #include <getopt.h>
 #include <unistd.h>
 #include <stdlib.h>
@@ -13,6 +14,8 @@
 #define MAX_ACCESS   0777
 
 #define SHORT_OPTS   "w"
+
+#define DELIM " \n\t"
 
 enum FLAGS
 {
@@ -35,6 +38,8 @@ int read_opts(int ac, char ** av);
 
 ssize_t safe_write( int fd, const void * buf, size_t count );
 bool read_n_write( int fd_in, int fd_out, char * buffer );
+
+void do_wc( int fd );
 
 #define ERR_CHECK(what)      \
     if (what < 0)            \
@@ -66,9 +71,11 @@ int main( int ac, char ** av )
 
         if(cpid == 0)
         {
-            dup2(STDOUT_FILENO, pipefd[1]);
-            close(pipefd[1]);
+            close(STDOUT_FILENO);
+            dup(pipefd[1]);
+
             close(pipefd[0]);
+            close(pipefd[1]);
 
             execvp(av[0 + optind], av + optind);
             perror(av[0 + optind]);
@@ -80,8 +87,12 @@ int main( int ac, char ** av )
             char buf[MAX_MEM_SIZE];
 
             close(pipefd[1]);
-            read_n_write(pipefd[0], STDOUT_FILENO, buf);
+
+            do_wc(pipefd[0]);
+
             close(pipefd[0]);
+
+            //printf("I AM YOUR PARENT, SHUT DOWN\n");
         }
     }
     else
@@ -94,8 +105,45 @@ int main( int ac, char ** av )
 
     return 0;
 }
-
 #undef ERR_CHECK
+
+void do_wc( int fd )
+{
+    char buf[MAX_MEM_SIZE];
+    ssize_t r_num = 0;
+
+    unsigned bytes = 0,
+             words = 0,
+             lines = 0;
+
+    do
+    {
+        r_num = read(fd, buf, MAX_MEM_SIZE);
+        if (r_num < 0)
+        {
+            perror("r_num");
+            return;
+        }
+
+        bytes += r_num;
+
+        for (int i = 0; i < r_num; ++i)
+            if (buf[i] == '\n')
+                ++lines;
+
+        if (strtok(buf, DELIM) != NULL)
+        {
+            for(char * tmp = buf; tmp != NULL; tmp = strtok(NULL, DELIM))
+                ++words;
+        }
+
+        if (!isspace(buf[r_num - 1]) && r_num > 0)
+            --words;
+
+    } while (r_num > 0);
+
+    printf("%u %u %u\n", lines, words, bytes);
+}
 
 int read_opts(int ac, char ** av)
 {
