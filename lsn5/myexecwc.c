@@ -13,7 +13,7 @@
 #define MAX_MEM_SIZE 4096
 #define MAX_ACCESS   0777
 
-#define SHORT_OPTS   "w"
+#define SHORT_OPTS "w"
 
 #define DELIM " \n\t"
 
@@ -84,14 +84,9 @@ int main( int ac, char ** av )
         else
         {
             ERR_CHECK(wait(NULL));
-            char buf[MAX_MEM_SIZE];
-
             close(pipefd[1]);
-
             do_wc(pipefd[0]);
-
             close(pipefd[0]);
-
             //printf("I AM YOUR PARENT, SHUT DOWN\n");
         }
     }
@@ -132,17 +127,15 @@ void do_wc( int fd )
                 ++lines;
 
         if (strtok(buf, DELIM) != NULL)
-        {
             for(char * tmp = buf; tmp != NULL; tmp = strtok(NULL, DELIM))
                 ++words;
-        }
 
         if (!isspace(buf[r_num - 1]) && r_num > 0)
             --words;
 
     } while (r_num > 0);
 
-    printf("%u %u %u\n", lines, words, bytes);
+    printf("%7u %7u %7u\n", lines, words, bytes);
 }
 
 int read_opts(int ac, char ** av)
