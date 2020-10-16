@@ -39,7 +39,7 @@ int main(int ac, char ** av)
     return 1;
 
   char buf[MAX_MEM_SIZE] = {};
-  setvbuf(stdout, NULL, _IONBF, 0);
+  setvbuf(stdout, buf, _IOLBF, MAX_MEM_SIZE);
 
   unsigned N = atoi(av[1]);
 
@@ -71,6 +71,8 @@ int main(int ac, char ** av)
 
   for (unsigned i = 0; i < N + 1; ++i)
     wait(NULL);
+
+  msgctl(msg_id, IPC_RMID, NULL);
 
   return 0;
 }
