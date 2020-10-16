@@ -15,10 +15,10 @@
 #define ACCESS   0700
 #define JDG_T    (N + 1)
 
-bool ac_check(int ac);
+bool ac_check( int ac );
 
-void judging( int msg_id, unsigned num );
-void running( int msg_id, unsigned N, unsigned id );
+int judging( int msg_id, unsigned num );
+int running( int msg_id, unsigned N, unsigned id );
 
 typedef struct msgbuf
 {
@@ -51,10 +51,7 @@ int main(int ac, char ** av)
   pid_t judge_pid = fork();
 
   if (judge_pid == 0)
-  {
-    judging(msg_id, N);
-    return 0;
-  }
+    return judging(msg_id, N);
 
   for (unsigned i = 0; i < N; ++i)
   {
@@ -62,11 +59,7 @@ int main(int ac, char ** av)
     ERR_CHECK(runner_pid < 0);
 
     if (runner_pid == 0)
-    {
-      // printf("RUNNER:  %d %d\n", getpid(), getppid());
-      running(msg_id, N, i + 1);
-      return 0;
-    }
+      return running(msg_id, N, i + 1);
   }
 
   for (unsigned i = 0; i < N + 1; ++i)
@@ -89,7 +82,7 @@ bool ac_check(int ac)
   return false;
 }
 
-void judging( int msg_id, unsigned N )
+int judging( int msg_id, unsigned N )
 {
   msgbuf tmp = {0, 0};
 
@@ -111,9 +104,11 @@ void judging( int msg_id, unsigned N )
     msgbuf msg_i = {i, 0};
     msgsnd(msg_id, &msg_i, sizeof(char), 0x0);
   }
+
+  return 0;
 }
 
-void running( int msg_id, unsigned N, unsigned id )
+int running( int msg_id, unsigned N, unsigned id )
 {
   msgbuf to_jdg = {JDG_T, 0};
   msgsnd(msg_id, &to_jdg, sizeof(char), 0x0);
@@ -133,4 +128,6 @@ void running( int msg_id, unsigned N, unsigned id )
   msgbuf end = {id, 0};
   msgrcv(msg_id, &end, sizeof(char), id, 0x0);
   printf("Runner #%u leave\n", id);
+
+  return 0;
 }
