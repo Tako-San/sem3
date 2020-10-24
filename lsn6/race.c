@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include <errno.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -7,13 +6,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-#include <sys/types.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
 
-#define MAX_MEM_SIZE 4096
-#define ACCESS   0700
-#define JDG_T    (N + 1)
+#define MAX_MEM_SIZE  4096
+#define ACCESS        0700
+#define JDG_T         (N + 1)
 
 bool ac_check( int ac );
 
@@ -70,7 +68,7 @@ int main(int ac, char ** av)
   return 0;
 }
 
-bool ac_check(int ac)
+bool ac_check( int ac )
 {
   if (ac > 2)
     printf("Too many arguments\n");
@@ -94,8 +92,10 @@ int judging( int msg_id, unsigned N )
   msgbuf frst = {1, 0};
   msgsnd(msg_id, &frst, sizeof(char), 0x0);
 
-  for (unsigned i = 1; i < N + 1; ++i)
-    msgrcv(msg_id, &tmp, sizeof(char), JDG_T, 0x0);
+  msgrcv(msg_id, &tmp, sizeof(char), JDG_T, 0x0);
+
+//  for (unsigned i = 1; i < N + 1; ++i)
+//    msgrcv(msg_id, &tmp, sizeof(char), JDG_T, 0x0);
 
   printf("Competition ended!\n");
 
@@ -111,23 +111,23 @@ int judging( int msg_id, unsigned N )
 int running( int msg_id, unsigned N, unsigned id )
 {
   msgbuf to_jdg = {JDG_T, 0};
+  printf("Runner #%03u arrived\n", id);
   msgsnd(msg_id, &to_jdg, sizeof(char), 0x0);
-  printf("Runner #%u arrived\n", id);
 
   msgbuf stick = {id, 0};
   msgrcv(msg_id, &stick, sizeof(char), id, 0x0);
-  printf("Runner #%u got stick\n", id);
+  printf("Runner #%03u got stick\n", id);
 
   ++stick.mtype;
+  printf("Runner #%03u giving stick away\n", id);
   msgsnd(msg_id, &stick, sizeof(char), 0x0);
-  printf("Runner #%u gave stick away\n", id);
 
-  msgsnd(msg_id, &to_jdg, sizeof(char), 0x0);
-  // printf("Runner #%u ready to leave\n", id);
+  // msgsnd(msg_id, &to_jdg, sizeof(char), 0x0);
+  // printf("Runner #%03u ready to leave\n", id);
 
   msgbuf end = {id, 0};
   msgrcv(msg_id, &end, sizeof(char), id, 0x0);
-  printf("Runner #%u leave\n", id);
+  printf("Runner #%03u leave\n", id);
 
   return 0;
 }
