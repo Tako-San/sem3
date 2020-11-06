@@ -55,6 +55,21 @@ void * global_alg( void * arg )
   return &count;
 }
 
+void * best_alg( void * arg )
+{
+  int num = *((int *) arg);
+
+  unsigned long long local_cnt = 0;
+
+  for (; local_cnt < num; ++local_cnt);
+
+  pthread_mutex_lock(&mutex);
+  count += local_cnt;
+  pthread_mutex_unlock(&mutex);
+
+  return &count;
+}
+
 int main( int ac, char ** av )
 {
   if (ac != 4)
@@ -70,19 +85,23 @@ int main( int ac, char ** av )
   assert(m > 0 && n > 0 && alg >= 0);
 
   int num = n / m;
+  int dm = num + (n % m);
 
   algo a_ptr = NULL;
 
   switch (alg)
   {
-    case 0:
+    case 1:
       a_ptr = naive_alg;
       break;
-    case 1:
+    case 2:
       a_ptr = fine_alg;
       break;
-    case 2:
+    case 3:
       a_ptr = global_alg;
+      break;
+    case 4:
+      a_ptr = best_alg;
       break;
     default:
       printf("bie\n");
@@ -91,7 +110,8 @@ int main( int ac, char ** av )
 
   thread_info tinfo[m];
 
-  for (int i = 0; i < m; ++i)
+  pthread_create(&tinfo[0].thread_id, NULL, a_ptr, &dm);
+  for (int i = 1; i < m; ++i)
     pthread_create(&tinfo[i].thread_id, NULL, a_ptr, &num);
 
   for (int i = 0; i < m; ++i)
@@ -102,7 +122,7 @@ int main( int ac, char ** av )
 
 
   printf("need: %d\n", n);
-  printf("have: %d\n", count);
+  printf("have: %lld\n", count);
 
   return 0;
 }
