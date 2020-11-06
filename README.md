@@ -30,3 +30,6 @@
 ## lesson 6
 
 * ```race.c``` - пример работы с ```msgget```, ```msgsnd``` и ```msgrcv```.
+
+## lesson 9
+* ```threads.c``` - работа с потоками.
