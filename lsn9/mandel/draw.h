@@ -6,11 +6,11 @@
 #define WIDTH 1920
 #define HEIGHT 1080
 
-#define FW 200
-#define FH 200
+#define FW 1920
+#define FH 1080
 
-#define ZoomX 5
-#define ZoomY 5
+#define ZoomX 1
+#define ZoomY 1
 
 typedef unsigned char Byte;
 

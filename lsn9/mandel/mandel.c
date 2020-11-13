@@ -4,7 +4,7 @@
 #include "draw.h"
 
 
-#define ITER_NUM 100
+#define ITER_NUM 255
 
 
 #define mod_sq( z ) ((creal(z) * creal(z)) + (cimag(z) * cimag(z)))
@@ -19,14 +19,14 @@ void mandel( int x, int y )
 
   for (int k = 0; k < ITER_NUM; ++k)
   {
-    z = z * z + c * sin(clock() / CLOCKS_PER_SEC);
+    z = z * z + c;
     if (mod_sq(z) > 4)
     {
-      pupi(x, y, k * k, 0, k);
+      pupi(x, y, k * k * k - k, k, k * k);
       return;
     }
   }
-  pupi(x, y, 255, 255, 255);
+  pupi(x, y, 255, 0, 255);
 }
 
 #undef mod_sq

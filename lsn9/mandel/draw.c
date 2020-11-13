@@ -54,7 +54,6 @@ void on_display( )
 
   glPixelZoom(ZoomX, ZoomY);
 
-  fill_frame();
   glDrawPixels(FW, FH, GL_BGR_EXT, GL_UNSIGNED_BYTE, frame);
 
   glFinish();
