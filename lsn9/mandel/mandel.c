@@ -14,7 +14,7 @@ void mandel( int x, int y )
   double doub_x = 4 * (double)x / FW - 2;
   double doub_y = 4 * (double)y / FH - 2;
 
-  double complex c = doub_x + I * doub_y;
+  double complex c = doub_y + I * doub_x;
   double complex z = 0 + I * 0;
 
   for (int k = 0; k < ITER_NUM; ++k)
@@ -22,11 +22,11 @@ void mandel( int x, int y )
     z = z * z + c;
     if (mod_sq(z) > 4)
     {
-      pupi(x, y, k * k * k - k, k, k * k);
+      pupi(x, y, k, k, k);
       return;
     }
   }
-  pupi(x, y, 255, 0, 255);
+  pupi(x, y, 255, 255, 255);
 }
 
 #undef mod_sq

@@ -3,10 +3,10 @@
 
 #include <GL/glut.h>
 
-#define WIDTH 1920
+#define WIDTH 1080
 #define HEIGHT 1080
 
-#define FW 1920
+#define FW 1080
 #define FH 1080
 
 #define ZoomX 1
@@ -23,6 +23,8 @@ typedef struct Borders
 Byte clamp( Byte num, Byte min, Byte max );
 
 void pupi( int x, int y, Byte r, Byte g, Byte b );
+
+void on_reshape( int new_w, int new_h );
 
 void on_keyboard( Byte key, int x, int y );
 

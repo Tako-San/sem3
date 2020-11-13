@@ -44,7 +44,7 @@ void * fill_frame_thread( void * arg )
 
 void on_display( )
 {
-  glClearColor(1, 1, 1, 1);
+  glClearColor(0, 0, 0, 0);
   glClear(GL_COLOR_BUFFER_BIT);
 
   glColor3b(0, 0, 0);
@@ -57,8 +57,17 @@ void on_display( )
   glDrawPixels(FW, FH, GL_BGR_EXT, GL_UNSIGNED_BYTE, frame);
 
   glFinish();
-  glutPostRedisplay();
+  // glutPostRedisplay();
   glutSwapBuffers();
+}
+
+void on_reshape( int new_w, int new_h )
+{
+  glViewport(0, 0, new_w, new_h);
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  gluOrtho2D(-1, 1, -1, 1);
+  glMatrixMode(GL_MODELVIEW);
 }
 
 void on_keyboard( Byte key, int x, int y )
@@ -78,4 +87,7 @@ void init( int * argc, char ** argv )
   glutCreateWindow("Mandel");
 
   glutKeyboardFunc(on_keyboard);
+  glutDisplayFunc(on_display);
+
+  glutReshapeFunc(on_reshape);
 }

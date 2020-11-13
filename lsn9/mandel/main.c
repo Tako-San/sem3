@@ -24,9 +24,9 @@ void print_time( timespec bgn, timespec end)
 
 int main( int argc, char ** argv )
 {
-  if (argc < 2)
+  if (argc < 3)
   {
-    printf("USAGE: ./mandel THR_NUMclock_gettime(CLOCK_MONOTONIC, &t_end); \n");
+    printf("USAGE: ./mandel THR_NUM IS_DRAW\n");
     return 0;
   }
 
@@ -57,10 +57,14 @@ int main( int argc, char ** argv )
   print_time(t_bgn, t_end);
 
   // drawing
+
+  if (atoi(argv[2]) != 1)
+    return 0;
+
   init(&argc, argv);
   fill_frame();
-  glutDisplayFunc(on_display);
   glutMainLoop();
+
   return 0;
 }
 
