@@ -93,10 +93,6 @@ int judging( int msg_id, unsigned N )
   msgsnd(msg_id, &frst, sizeof(char), 0x0);
 
   msgrcv(msg_id, &tmp, sizeof(char), JDG_T, 0x0);
-
-//  for (unsigned i = 1; i < N + 1; ++i)
-//    msgrcv(msg_id, &tmp, sizeof(char), JDG_T, 0x0);
-
   printf("Competition ended!\n");
 
   for (unsigned i = 1; i < N + 1; ++i)
@@ -121,9 +117,6 @@ int running( int msg_id, unsigned N, unsigned id )
   ++stick.mtype;
   printf("Runner #%03u giving stick away\n", id);
   msgsnd(msg_id, &stick, sizeof(char), 0x0);
-
-  // msgsnd(msg_id, &to_jdg, sizeof(char), 0x0);
-  // printf("Runner #%03u ready to leave\n", id);
 
   msgbuf end = {id, 0};
   msgrcv(msg_id, &end, sizeof(char), id, 0x0);
