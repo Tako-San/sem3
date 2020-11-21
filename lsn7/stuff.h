@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <errno.h>
 #include <unistd.h>
 #include <stdlib.h>
 
@@ -25,6 +26,7 @@ typedef enum SemInd
   SUN = 0,
   TRIP,
   SHIP,
+  READY,
   LADDER,
   DOCK_IN,
   DOCK_OUT

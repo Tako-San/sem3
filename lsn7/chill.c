@@ -22,14 +22,14 @@ int main( int argc, char ** argv )
   SHIP_CAP     = atoi(argv[3]);
   int ride_num = atoi(argv[4]);
 
-  SHIP_CAP     = SHIP_CAP > PASS_NUM ? SHIP_CAP : PASS_NUM;
+  SHIP_CAP     = SHIP_CAP < PASS_NUM ? SHIP_CAP : PASS_NUM;
   DOCK_CAP     = SHIP_CAP;
 
   int sem_id = semget(IPC_PRIVATE, SEM_NUM, ACCESS);
 
   /* Capitan fork and processing */
 
-  V(sem_id, SUN, 1);
+  //V(sem_id, SUN, 1);
   V(sem_id, TRIP, 1);
 
   pid_t cap_pid = fork();
@@ -64,40 +64,40 @@ int main( int argc, char ** argv )
 
 int process_cap( int sem_id, int rides )
 {
-  V(sem_id, SHIP, SHIP_CAP);
-    printf("SHIP OPENED\n");
+    printf("LADDER OPENING\n");
+  V(sem_id, LADDER, LADDER_CAP);
 
+    printf("SHIP OPENING\n");
+  V(sem_id, SHIP, SHIP_CAP);
 
   for (int i = 0; i < rides; ++i)
   {
+      printf("DOCK ENTER OPENING\n");
     V(sem_id, DOCK_IN, DOCK_CAP);
-      printf("DOCK IN OPENED\n");
-
-    V(sem_id, LADDER, LADDER_CAP);
-      printf("LADDER OPENED\n");
 
     Z(sem_id, DOCK_IN);
-      printf("DOCK IN VAL ZERO\n");
+      printf("MAXIMUM PEOPLE ENTERED DOCK\n");
 
     Z(sem_id, DOCK_OUT);
-      printf("DOCK OUT VAL ZERO\n");
+      printf("MAXIMUM PEOPLE LEFT DOCK\n");
 
-    Z(sem_id, SHIP);
-      printf("SHIP FULL\n");
+    P(sem_id, READY, DOCK_CAP);
+      printf("EVERYBODY READY\n");
 
     P(sem_id, LADDER, LADDER_CAP);
       printf("LADDER CLOSED\n");
 
     P(sem_id, TRIP, 1);
-      printf("---------TRIP---------\n");
-
+      printf("------------------TRIPPING-----------------\n");
     V(sem_id, TRIP, 1);
 
+      printf("OPENING DOCK OUT\n");
     V(sem_id, DOCK_OUT, DOCK_CAP);
-      printf("DOCK OUT OPENED\n");
+
+      printf("OPENING LADDER\n");
+    V(sem_id, LADDER, LADDER_CAP);
   }
 
-  Z(sem_id, DOCK_OUT);
   V(sem_id, SUN, 1);
 
   return 0;
@@ -107,41 +107,51 @@ int process_pass( int sem_id, int num )
 {
   int count = 0;
 
-  //Z(sem_id, SUN);
-
   while (1)
   {
-      printf("    #%03d waiting\n", num);
+    if (Z_NO_WAIT(sem_id, SUN) == -1 && errno ==  EAGAIN)
+    {
+      printf("    #%03d leave\n", num);
+      break;
+    }
 
     P(sem_id, DOCK_IN, 1);
-      printf("    #%03d in dock\n", num);
+      printf("    #%03d entered DOCK\n", num);
 
     P(sem_id, LADDER, 1);
-      printf("    #%03d in ladder\n", num);
+      printf("    #%03d entered LADDER\n", num);
+
+      printf("    #%03d leaving LADDER\n", num);
     V(sem_id, LADDER, 1);
-      printf("    #%03d left ladder\n", num);
 
     P(sem_id, SHIP, 1);
-      printf("    #%03d on board\n", num);
+      printf("    #%03d entered SHIP\n", num);
 
+      printf("    #%03d ready to trip\n", num);
+    V(sem_id, READY, 1);
+
+      printf("    #%03d waiting trip\n", num);
     Z(sem_id, TRIP);
-      printf("    #%03d tripping\n", num);
+      printf("    #%03d TRIPPING\n", num);
       ++count;
 
+      printf("    #%03d leaving SHIP\n", num);
     V(sem_id, SHIP, 1);
-      printf("    #%03d left board\n", num);
 
     P(sem_id, LADDER, 1);
-      printf("    #%03d in ladder\n", num);
+      printf("    #%03d entered LADDER\n", num);
 
+      printf("    #%03d left LADDER\n", num);
     V(sem_id, LADDER, 1);
-      printf("    #%03d left ladder\n", num);
 
     P(sem_id, DOCK_OUT, 1);
-      printf("    #%03d left dock\n", num);
+      printf("    #%03d left DOCK\n", num);
 
-    if (Z_NO_WAIT(sem_id, SUN) == -1)
+    if (Z_NO_WAIT(sem_id, SUN) == -1 && errno ==  EAGAIN)
+    {
+      printf("    #%03d leave\n", num);
       break;
+    }
   }
 
   return count;
@@ -167,6 +177,6 @@ void Z( int sem_id, SemInd ind )
 
 int Z_NO_WAIT( int sem_id, SemInd ind )
 {
-  sembuf buf = {ind, 0, 0};
+  sembuf buf = {ind, 0, IPC_NOWAIT};
   return semop(sem_id, &buf, 1);
 }
