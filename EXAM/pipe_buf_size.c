@@ -17,10 +17,11 @@ int main( )
   }
 
   int counter;
+  char x = 'x';
 
-  for (counter = 0; write(pipefd[1], "x", 1); ++counter);
+  for (counter = 0; write(pipefd[0], &x, 1) > 0; ++counter);
 
-  printf("Pipe size: %d", counter);
+  printf("Pipe size: %d\n", counter);
 
   return 0;
 }
