@@ -7,8 +7,9 @@
 #include <stdlib.h>
 
 #include <pthread.h>
+#include <poll.h>
 
-int count = 0;
+int count = 1;
 
 typedef struct thread_info
 {
@@ -18,17 +19,24 @@ typedef struct thread_info
 } thread_info;
 
 int pipefd[2] = {};
+char buf[66000];
 
 void * thread_writer( void * input )
 {
-  while(write(pipefd[0], "x", 1) == 1);
+
+  while(write(pipefd[1], buf, count) > 0)
+  {
+    read(pipefd[0], buf, count);
+    ++count;
+  }
+
   return 0;
 }
 
-void * thread_reader( void * input )
+void * thread_observer( void * input )
 {
-  char tmp;
-  for (count = 0; read(pipefd[1], &tmp, 1) > 0; ++count);
+  struct pollfd fds = {pipefd[0], POLLOUT};
+  while (poll(&fds, 1, 42) > 0);
   return 0;
 }
 
@@ -40,17 +48,12 @@ int main( )
     exit(1);
   }
 
-  int counter;
-
   thread_info tinfo[2];
 
   pthread_create(&tinfo[0].thread_id, NULL, thread_writer, NULL);
-  pthread_create(&tinfo[1].thread_id, NULL, thread_reader, NULL);
+  pthread_create(&tinfo[1].thread_id, NULL, thread_observer, NULL);
 
-  int * ans;
-
-  pthread_join(tinfo[0].thread_id, NULL);
-  pthread_join(tinfo[1].thread_id, (void **)&ans);
+  pthread_join(tinfo[1].thread_id, NULL);
 
   printf("Pipe size: %d bytes\n", count);
 
