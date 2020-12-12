@@ -8,6 +8,7 @@
 
 #include <pthread.h>
 
+int count = 0;
 
 typedef struct thread_info
 {
@@ -20,17 +21,15 @@ int pipefd[2] = {};
 
 void * thread_writer( void * input )
 {
-  while(write(pipefd[0], "x", 1) == 1)
-    printf("w\n");
+  while(write(pipefd[0], "x", 1) == 1);
   return 0;
 }
 
 void * thread_reader( void * input )
 {
-  int count;
-  for (count = 0; read(pipefd[1], NULL, 1) > 0; ++count)
-    printf("r\n");
-  return (void *)count;
+  char tmp;
+  for (count = 0; read(pipefd[1], &tmp, 1) > 0; ++count);
+  return 0;
 }
 
 int main( )
@@ -49,10 +48,11 @@ int main( )
   pthread_create(&tinfo[1].thread_id, NULL, thread_reader, NULL);
 
   int * ans;
+
   pthread_join(tinfo[0].thread_id, NULL);
   pthread_join(tinfo[1].thread_id, (void **)&ans);
 
-  printf("Pipe size: %d bytes\n", *ans);
+  printf("Pipe size: %d bytes\n", count);
 
   return 0;
 }
