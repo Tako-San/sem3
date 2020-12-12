@@ -35,8 +35,8 @@ void * thread_writer( void * input )
 
 void * thread_observer( void * input )
 {
-  struct pollfd fds = {pipefd[0], POLLOUT};
-  while (poll(&fds, 1, 42) > 0);
+  struct pollfd fds = {pipefd[1], POLLIN | POLLERR | POLLNVAL};
+  while (poll(&fds, 1, 200) > 0);
   return 0;
 }
 
