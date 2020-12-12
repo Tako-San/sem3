@@ -18,11 +18,11 @@ int main( )
     exit(1);
   }
 
-  struct pollfd fds = {pipefd[1]};
+  struct pollfd fds = {pipefd[1], POLLOUT};
 
   int counter;
 
-  for (counter = 0; poll(&fds, 1, -1); ++counter)
+  for (counter = 0; poll(&fds, 1, 42); ++counter)
     write(pipefd[1], "x", 1);
 
   printf("Pipe size: %d bytes\n", counter);
