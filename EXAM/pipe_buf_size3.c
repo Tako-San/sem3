@@ -59,7 +59,7 @@ int main( )
 
   pthread_join(tinfo[1].thread_id, NULL);
 
-  printf("Pipe size: %d bytes\n", count);
+  printf("Pipe size: %d bytes\n", count - 1); // beacause of cycle
 
   return 0;
 }
