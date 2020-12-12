@@ -20,7 +20,7 @@ int main( )
 
   for (counter = 0; write(pipefd[1], "x", 1) > 0; ++counter);
 
-  printf("Pipe size: %d\n", counter);
+  printf("Pipe size: %d bytes\n", counter);
 
   return 0;
 }
