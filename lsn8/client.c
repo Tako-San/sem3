@@ -17,7 +17,7 @@ int main( int ac, char ** av)
 
   if (ac == 1 || av[1][0] == '-')
   {
-    if (!print(stdin))
+    if (!print(stdin, sem_id))
       return 1;
     return 0;
   }
