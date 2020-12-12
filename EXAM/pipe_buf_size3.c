@@ -10,6 +10,8 @@
 #include <poll.h>
 
 int count = 1;
+int flag  = 0;
+
 
 typedef struct thread_info
 {
@@ -23,10 +25,11 @@ char buf[66000];
 
 void * thread_writer( void * input )
 {
-
   while(write(pipefd[1], buf, count) > 0)
   {
+    flag = 1;
     read(pipefd[0], buf, count);
+    flag = 0;
     ++count;
   }
 
@@ -35,8 +38,9 @@ void * thread_writer( void * input )
 
 void * thread_observer( void * input )
 {
-  struct pollfd fds = {pipefd[1], POLLOUT | POLLERR | POLLNVAL};
-  while (poll(&fds, 1, 42) > 0);
+  while (usleep(2000000))
+    if (flag == 0)
+      break;
   return 0;
 }
 
